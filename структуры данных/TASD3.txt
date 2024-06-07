@@ -1,0 +1,83 @@
+#include <iostream>
+#include <fstream> 
+#include <string>
+#include <set>
+#include <sstream> //организация работы со строками через интерфейс потоков
+#include <Windows.h>
+
+bool isPunctuation(char c) {
+    return c == '.' || c == ',';
+}
+
+std::string processWord(const std::string& word) {
+    std::string processedWord = word;
+
+    // Удаление точек и запятых 
+    while (!processedWord.empty() && isPunctuation(processedWord.back())) {
+        processedWord.pop_back();
+    }
+
+    // Приведение слова к нижнему регистру
+    std::locale loc("");
+    for (char& c : processedWord) {
+        c = std::tolower(c);
+    }
+
+    return processedWord;
+}
+
+int main() {
+    SetConsoleCP(1251);
+    SetConsoleOutputCP(1251);
+
+    std::string filename = "textfile.txt"; // Имя текстового файла
+
+    // Создание и запись данных в файл с консоли
+    std::ofstream file(filename);
+    if (file.is_open()) {
+        std::string input;
+        std::cout << "Введите данные для записи в файл (для завершения введите 'end' отдельной строкой):\n";
+        while (true) { 
+            std::getline(std::cin, input);
+            if (input == "end") break;
+            file << input << "\n";
+        }
+        file.close();
+    }
+    else {
+        std::cerr << "Не удалось открыть файл для записи.\n";
+        return 1;
+    }
+
+    // Открытие файла для чтения и обработка уникальных слов
+    std::ifstream infile(filename);
+    if (!infile.is_open()) {
+        std::cerr << "Не удалось открыть файл для чтения.\n";
+        return 1;
+    }
+
+    std::set<std::string> uniqueWords; // Множество для хранения уникальных слов
+
+    std::string line;
+    while (std::getline(infile, line)) {
+        std::istringstream iss(line);
+        std::string word;
+        while (iss >> word) {
+            // Обработка слова
+            word = processWord(word);
+            if (!word.empty()) {
+                uniqueWords.insert(word); // Добавление слова в множество
+            }
+        }
+    }
+
+    infile.close();
+
+    // Вывод уникальных слов
+    std::cout << "\nУникальные слова в файле:\n";
+    for (const std::string& word : uniqueWords) {
+        std::cout << word << std::endl;
+    }
+
+    return 0;
+}

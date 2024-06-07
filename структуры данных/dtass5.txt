@@ -1,0 +1,114 @@
+#include <iostream>
+#include <vector>
+#include <limits.h>
+#include <fstream>
+#include <locale>
+
+using namespace std;
+
+class Graph {
+    int V; // Количество вершин
+    vector<vector<int>> adj; // Список смежности
+    vector<bool> visited; // Массив для отслеживания посещенных вершин
+    int longestPathLength;
+    vector<int> longestPath;
+
+    void DFS(int v, vector<int>& path) {
+        visited[v] = true;
+        path.push_back(v);
+
+        // Если текущий путь длиннее найденного ранее, обновляем его
+        if (path.size() > longestPathLength) {
+            longestPathLength = path.size();
+            longestPath = path;
+        }
+
+        // Рекурсивно посещаем все смежные вершины
+        for (int i : adj[v]) {
+            if (!visited[i]) {
+                DFS(i, path);
+            }
+        }
+
+        // Возвращаемся назад и помечаем вершину как непосещенную
+        path.pop_back();
+        visited[v] = false;
+    }
+
+public:
+    Graph(int V) : V(V), adj(V), visited(V, false), longestPathLength(0) {}
+
+    void addEdge(int v, int w) {
+        adj[v].push_back(w); // Добавляем ребро в граф
+    }
+
+    void findLongestPath() {
+        for (int i = 0; i < V; i++) {
+            vector<int> path;
+            DFS(i, path); // Ищем самый длинный путь из каждой вершины
+        }
+        ofstream outputFile("output.dat");
+
+        cout << "Самый длинный путь имеет длину: " << longestPathLength << endl;
+        cout << "Путь: ";
+        for (int v : longestPath) {
+            cout << v << " ";
+            outputFile << v << " ";
+        }
+        cout << endl;
+        outputFile.close();
+        cout << "Результат поиска записан в файл output.dat" << endl;
+    }
+};
+
+void input_file(int numVertices, int numEdges) {
+    // Открытие выходного файла для сохранения графа
+    ofstream outputFile("input.dat");
+    outputFile << numVertices << " " << numEdges << endl;
+
+    // Считывание ребер и сохранение их в файл
+    for (int i = 0; i < numEdges; ++i) {
+        int from, to;
+        cout << "Введите ребро (от, до): ";
+        cin >> from >> to;
+        outputFile << from << " " << to << endl;
+    }
+
+    outputFile.close();
+
+    cout << "Граф успешно сохранен в файле input.dat" << endl;
+}
+
+int main() {
+    setlocale(LC_ALL, "Rus");
+    int numVertices, numEdges;
+    // Ввод количества вершин и ребер с консоли
+    cout << "Введите количество вершин: ";
+    cin >> numVertices;
+    cout << "Введите количество ребер: ";
+    cin >> numEdges;
+
+    input_file(numVertices, numEdges);
+    ifstream inputFile("input.dat");
+    inputFile >> numVertices >> numEdges;// Считываем количество вершин и рёбер
+
+    Graph g(numVertices);
+
+    for (int i = 0; i < numEdges; ++i) {
+        int from, to;
+        inputFile >> from >> to;// Считываем ребро
+
+        g.addEdge(from, to);
+        
+
+    }
+    
+
+
+ 
+    g.findLongestPath();
+
+    inputFile.close();
+    return 0;
+}
+
